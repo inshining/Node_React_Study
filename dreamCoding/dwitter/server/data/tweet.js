@@ -1,26 +1,31 @@
 import { getTweets, getUsers } from '../db/database.js';
 import * as userRepository from './auth.js';
 import MongoDb from 'mongodb';
+import {  useVirtalId } from '../db/database.js';
+import Mongoose from 'mongoose';
+
+const tweetSchema = new Mongoose.Schema({
+  text: { type: String, required: true},
+  userId: { type: String, required: true},
+  name: { type: String, required: true},
+  username: { type: String, required: true},
+  url: String,
+}, {timestamps: true})
+
+useVirtalId(tweetSchema);
+
+const Tweet = Mongoose.model('Tweet', tweetSchema);
 
 export async function getAll() {
-  return getTweets()
-        .find()
-        .sort({createdAt: -1})
-        .toArray()
-        .then(mapTweets);
+  return Tweet.find().sort({createdAt:-1});
 }
 
 export async function getAllByUsername(username) {
-  const query = {username};
-  return getTweets()
-        .find(query)
-        .toArray();
+  return Tweet.find({username}).sort({createdAt:-1});
 }
 
 export async function getById(id) {
-  return getTweets()
-        .findOne({_id: new MongoDb.ObjectId(id)})
-        .then(mapOptionalTweet)
+  return Tweet.findById(id);
 }
 
 export async function create(text, userId) {
@@ -33,39 +38,13 @@ export async function create(text, userId) {
     username,
     url,
   }
-  return getTweets()
-        .insertOne(tweet)
-        .then((data) => {mapOptionalTweet({...tweet, _id: data.insertedId})});
+  return new Tweet(tweet).save();
 };
 
 export async function update(id, text) {
-  return getTweets()
-        .findOneAndUpdate(
-          {_id: new MongoDb.ObjectId(id)}, 
-          {$set: {text}},
-          { returnDocument: 'after'},
-        )
-        .then(result => result.value)
-        .then(mapOptionalTweet);
+  return Tweet.findByIdAndUpdate(id, {text});
 }
 
 export async function remove(id) {
-  const query = {_id: new MongoDb.ObjectId(id)};
-  return getTweets()
-        .deleteOne(query)
-        .then((result) => {
-          if (result.deletedCount === 1){
-            console.log("Successfully deleted one document.");
-          } else {
-            console.log("No documents matched the query.");
-          }
-        });
-}
-
-function mapOptionalTweet(tweet){
-  return tweet ? {...tweet, id: tweet._id.toString()} : tweet;
-}
-
-function mapTweets(tweets) {
-  return tweets.map(mapOptionalTweet);
+  return Tweet.findByIdAndDelete(id);
 }

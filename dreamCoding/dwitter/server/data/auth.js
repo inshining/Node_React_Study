@@ -1,24 +1,33 @@
-import { connectDB, getUsers } from '../db/database.js';
-import MongoDb from 'mongodb';
+import {  useVirtalId } from '../db/database.js';
+import Mongoose from 'mongoose';
+
+const userSchema = new Mongoose.Schema({
+  username:  { type: String, required: true},
+  password: { type: String, required: true},
+  name: { type: String, required: true},
+  email: { type: String, required: true},
+  url: { type: String},
+})
+
+useVirtalId(userSchema);
+
+const User = Mongoose.model('User', userSchema);
+
 
 export async function findByUsername(username) {
-  return getUsers()
-        .findOne({username})
-        .then(mapOptionalUser)
+  return User.findOne({username});
 }
 
 export async function findById(id) {
-  return getUsers()
-        .findOne({_id: new MongoDb.ObjectId(id)})
-        .then(mapOptionalUser)
+  return User.findById(id)
 }
 
 export async function createUser(user) {
-  
-  return getUsers()
-        .insertOne(user)
-        .then((data) => data.insertedId.toString());
-        
+  return new User(user).save()
+        .then((data) => {
+          console.log(data.id);
+          return data.id;
+        })
 }
 
 function mapOptionalUser(user) {

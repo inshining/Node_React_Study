@@ -9,6 +9,7 @@ import { config } from './config.js';
 import { initSocket } from './connection/socket.js';
 import { connectDB } from './db/database.js';
 
+
 const app = express();
 
 app.use(express.json());
