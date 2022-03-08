@@ -7,7 +7,7 @@ import tweetsRouter from './router/tweets.js';
 import authRouter from './router/auth.js';
 import { config } from './config.js';
 import { initSocket } from './connection/socket.js';
-import { connectDB, sequelize } from './db/database.js';
+import { connectDB } from './db/database.js';
 
 const app = express();
 
@@ -35,10 +35,4 @@ connectDB().then(db => {
 })
 .catch(console.error());
 
-
-// sequelize.sync().then((client) => {
-//   // console.log(client);
-//   const server = app.listen(config.host.port);
-//   initSocket(server);
-// })
 

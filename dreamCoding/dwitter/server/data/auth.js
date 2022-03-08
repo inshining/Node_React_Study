@@ -1,47 +1,32 @@
-import { db, sequelize } from "../db/database.js";
-import SQ from 'sequelize';
-
-const DataTypes = SQ.DataTypes;
-
-
-export const User = sequelize.define('user', (
+// abcd1234: $2b$12$G9xf8SFq3oTEgdj7ozHQ/uhDOyeQcUEDU8tnOcvpvApuadr3nE5Vm
+let users = [
   {
-    id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: DataTypes.INTEGER
-    },
-    username:{
-        type:DataTypes.STRING,
-        allowNull: false,
-        unique:true,
-    },
-    password:{
-        type:DataTypes.STRING,
-        allowNull: false,
-    },
-    email:{
-        type:DataTypes.STRING,
-        allowNull:false,
-    },
-    name: {
-        type:DataTypes.STRING,
-        allowNull:false,
-    },
-    url: {
-        type:DataTypes.TEXT,
-    }}
-));
+    id: '1',
+    username: 'bob',
+    password: '$2b$12$G9xf8SFq3oTEgdj7ozHQ/uhDOyeQcUEDU8tnOcvpvApuadr3nE5Vm',
+    name: 'Bob',
+    email: 'bob@gmail.com',
+    url: 'https://widgetwhats.com/app/uploads/2019/11/free-profile-photo-whatsapp-1.png',
+  },
+  {
+    id: '2',
+    username: 'ellie',
+    password: '$2b$12$G9xf8SFq3oTEgdj7ozHQ/uhDOyeQcUEDU8tnOcvpvApuadr3nE5Vm',
+    name: 'Ellie',
+    email: 'ellie@gmail.com',
+  },
+];
 
 export async function findByUsername(username) {
-  return User.findOne({where: {username}});
+  return users.find((user) => user.username === username);
 }
 
 export async function findById(id) {
-  return User.findByPk(id);
+  return users.find((user) => user.id === id);
 }
 
 export async function createUser(user) {
-  return User.create(user).then((result) => {console.log(result); return result.dataValues.id;});
+  const created = { ...user, id: Date.now().toString() };
+  users.push(created);
+  return created.id;
 }
