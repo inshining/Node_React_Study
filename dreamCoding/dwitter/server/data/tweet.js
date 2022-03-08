@@ -1,65 +1,71 @@
+import { getTweets, getUsers } from '../db/database.js';
 import * as userRepository from './auth.js';
-
-let tweets = [
-  {
-    id: '1',
-    text: '드림코더분들 화이팅!',
-    createdAt: new Date().toString(),
-    userId: '1',
-  },
-  {
-    id: '2',
-    text: '안뇽!',
-    createdAt: new Date().toString(),
-    userId: '1',
-  },
-];
+import MongoDb from 'mongodb';
 
 export async function getAll() {
-  return Promise.all(
-    tweets.map(async (tweet) => {
-      const { username, name, url } = await userRepository.findById(
-        tweet.userId
-      );
-      return { ...tweet, username, name, url };
-    })
-  );
+  return getTweets()
+        .find()
+        .sort({createdAt: -1})
+        .toArray()
+        .then(mapTweets);
 }
 
 export async function getAllByUsername(username) {
-  return getAll().then((tweets) =>
-    tweets.filter((tweet) => tweet.username === username)
-  );
+  const query = {username};
+  return getTweets()
+        .find(query)
+        .toArray();
 }
 
 export async function getById(id) {
-  const found = tweets.find((tweet) => tweet.id === id);
-  if (!found) {
-    return null;
-  }
-  const { username, name, url } = await userRepository.findById(found.userId);
-  return { ...found, username, name, url };
+  return getTweets()
+        .findOne({_id: new MongoDb.ObjectId(id)})
+        .then(mapOptionalTweet)
 }
 
 export async function create(text, userId) {
+  const {username, name, url } = await userRepository.findById(userId);
   const tweet = {
-    id: new Date().toString(),
     text,
     createdAt: new Date(),
     userId,
-  };
-  tweets = [tweet, ...tweets];
-  return getById(tweet.id);
-}
+    name,
+    username,
+    url,
+  }
+  return getTweets()
+        .insertOne(tweet)
+        .then((data) => {mapOptionalTweet({...tweet, _id: data.insertedId})});
+};
 
 export async function update(id, text) {
-  const tweet = tweets.find((tweet) => tweet.id === id);
-  if (tweet) {
-    tweet.text = text;
-  }
-  return getById(tweet.id);
+  return getTweets()
+        .findOneAndUpdate(
+          {_id: new MongoDb.ObjectId(id)}, 
+          {$set: {text}},
+          { returnDocument: 'after'},
+        )
+        .then(result => result.value)
+        .then(mapOptionalTweet);
 }
 
 export async function remove(id) {
-  tweets = tweets.filter((tweet) => tweet.id !== id);
+  const query = {_id: new MongoDb.ObjectId(id)};
+  return getTweets()
+        .deleteOne(query)
+        .then((result) => {
+          if (result.deletedCount === 1){
+            console.log("Successfully deleted one document.");
+          } else {
+            console.log("No documents matched the query.");
+          }
+        });
+}
+
+function mapOptionalTweet(tweet){
+  return tweet ? {...tweet, id: tweet._id.toString()} : tweet;
+}
+
+function mapTweets(tweets) {
+  return tweets.map(mapOptionalTweet);
 }
