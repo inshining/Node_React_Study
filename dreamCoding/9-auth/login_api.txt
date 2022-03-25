@@ -1,0 +1,43 @@
+login api
+
+1. login /auth/login
+Post
+REQ
+     {
+        "id" : "id",
+        "password": "password",
+    }
+
+RES 
+{
+    "isLogin" : true
+}
+
+2. 유정 정보 수정 /auth/update
+PUT
+REQ 
+    {
+        "password": "password",
+        "name" : "name",
+        "username" : "username"
+    }
+
+RES 
+{
+    "isUpdated": True
+}
+
+3.Sign up /auth/signup
+REQ 
+{
+    "userId": "userId",
+    "password": "password",
+    "name": "name",
+    "email": "email",
+    "url" : "url"
+}
+
+RES
+{
+    "isValidted": True
+}

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <title>코로나 지도 클론 코딩</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=78fs5juh4y"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=acbfe60d5acfa9f77988a9144cf0fdbd&libraries=services"></script>
+  </head>
+<body>
+  <div id="navbar">myfirstmap</div>
+  <div id="infoBox">
+    <div id="infoTitle">현재날짜</div>
+    <div id="infoContent">2020.03.25</div>
+  </div>
+  <div id="search">
+    <input id="search_input" placeholder="목적지를 입력해주세요" />
+    <button id="search_button">검색</button>
+  </div>
+  <div id="current">현재 위치</div>
+<div id="map" style="width:100%;height:100vh;"></div>
+<script type="text/javascript" src="/data/data.js"></script>
+
+<script>
+var mapOptions = {
+    center: new naver.maps.LatLng(37.3595704, 127.105399),
+    zoom: 10
+};
+
+var map = new naver.maps.Map('map', mapOptions);
+
+var markerList = [];
+var infoWindowList = [];
+
+for (var i in data) {
+  var target = data[i];
+  var latlng = new naver.maps.LatLng(target.lat, target.lng);
+  marker = new naver.maps.Marker({
+    map : map,
+    position : latlng,
+    icon : {
+      content : "<div class='marker'></div>",
+      anchor : new naver.maps.Point(12, 12)
+    }
+  });
+
+  var content = `<div class='infowindow_wrap'>
+    <div class='infowindow_title'>${target.title}</div>
+    <div class='infowindow_content'>${target.content}</div>
+    <div class='infowindo_data'>${target.date}</div>
+    </div>`
+
+  var infowindow = new naver.maps.InfoWindow({
+    content:content,
+    backgroundColor : '#00ff00000',
+    borderColor : "#00ff0000",
+    anchorSize : new naver.maps.Size(0,0)
+  })
+
+  markerList.push(marker);
+  infoWindowList.push(infowindow);
+}
+
+for (let i =0; i <  markerList.length; i++){
+  naver.maps.Event.addListener(map, "click", ClickMap(i));
+  naver.maps.Event.addListener(markerList[i], "click", getClickHandler(i));
+}
+
+function ClickMap(i){
+  return function(){
+    const infowindow = infoWindowList[i];
+    infowindow.close();
+  }
+}
+
+function getClickHandler(i) {
+  return function() {
+    const marker = markerList[i];
+    const infowindow = infoWindowList[i];
+    if (infowindow.getMap()){
+      infowindow.close();
+    } else{
+      infowindow.open(map, marker);
+    }
+    
+  }
+}
+
+let currentUse = true; 
+
+$('#current').click(() => {
+  if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      const latlng = new naver.maps.LatLng(lat, lng);
+      if (currentUse) {
+        marker = new naver.maps.Marker({
+        map: map,
+        position: latlng,
+        icon : {
+          content : '<img class="pulse" draggable="false" unselectable= "on" src = "https://myfirstmap.s3.ap-northeast-2.amazonaws.com/circle.png">',
+          anchor: new naver.maps.Point(11,11)
+        }
+        });
+        currentUse = false;
+      }
+      
+      map.setZoom(14, false);
+      map.panTo(latlng);
+    });
+  } else {
+    alert('위치정보 사용 불가능');
+  }
+})
+
+let ps = new kakao.maps.services.Places();
+let search_arr = [];
+
+$("#search_input").on("keydown", function(e) {
+  if (e.keyCode === 13) {
+    let content = event.target.value;
+    ps.keywordSearch(content, placeSearchCB);
+  }
+})
+
+$("#search_button").on("click", (e) => {
+  let content = $("#search_input").val();
+  ps.keywordSearch(content, placeSearchCB);
+
+})
+
+function placeSearchCB(data, status, pagination){
+  if (status === kakao.maps.services.Status.OK) {
+    let target = data[0];
+    const lat = target.y;
+    const lng = target.x;
+    const latlng = new naver.maps.LatLng(lat, lng);
+    marker = new naver.maps.Marker({
+      map : map,
+      position : latlng
+    })
+    if (search_arr.length === 0){
+      search_arr.push(marker);
+    } else {
+      search_arr.push(marker);
+      let pre_marker = search_arr.splice(0,1);
+      pre_marker[0].setMap(null);
+    }
+    map.setZoom(14, false);
+    map.panTo(latlng);
+  } else {
+    alert("검색결과가 없습니다.");
+  }
+}
+</script>
+</body>
+</html>

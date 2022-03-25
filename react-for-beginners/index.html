@@ -5,29 +5,97 @@
 <body>
     <div id="root"></div>
 </body>
-    <script src="https://unpkg.com/react@17.0.2/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react@17.0.2/umd/react.development.js"></script>   
     <script src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/prop-types@15.7.2/prop-types.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script type="text/babel">
-        const root = document.getElementById("root");
-        const Title = (
-        <h3 id = 'btn' onMouseEnter={() => console.log("mouse enter ")}>
-        Hello I'm a title
-        </h3>
-        );
-        
-        const Button = (
-            <button 
-            style={{
-                backgroundColor: "tomato",
-        }}
-        onClick={() => console.log("im clicked")}
-        >Click me</button>
-        )
+        let counter = 0;
+        function countUp() {
 
-    
-        const container = React.createElement("div", null, [Title, Button]);
-        ReactDOM.render(container, root);
+        }
+
+        function MinutesToHours() {
+            const [amount, setAmount] = React.useState(0);
+            const [flipped, setFlipped] = React.useState(false);
+            const onChange = (event) => {
+                setAmount(event.target.value);
+            }
+            const reset = () => setAmount(0);
+            const onFlip = () => {
+                reset()
+                setFlipped((current) => !current);
+            }
+            return(
+            <div>
+            <label for="amount">Minutes</label>
+            <input
+            value={flipped ? amount * 60 : amount}
+             id="amount" 
+             placeholder="Minutes "  
+             type="number"
+             onChange = {onChange}
+             disabled={flipped === true}
+             />
+            <label for="hours">Hours</label>
+            <input
+            value={!flipped ? Math.round(amount / 60) : amount}
+            id="hours" 
+            placeholder="Hours " 
+            type="number" 
+            onChange = {onChange}
+            disabled={!flipped}
+            />
+            <button onClick={reset}>Reset</button>
+            <button onClick={onFlip}>
+                {flipped ? "inver" : "turn back"}
+                </button>
+            </div>
+        )};
+
+        function KmToMiles(){
+            return <h3>KM 2 M </h3>
+        }
+        function Btn({ text, onClick, fontSize }) {
+
+            return <button 
+            onClick = {onClick}
+            style={{
+                backgroundColor:"tomato",
+                color:"white",
+                padding: "10px 20px",
+                border: 0,
+                borderRadius: 10,
+                fontSize,
+            }}>{ text }</button>
+        }
+
+        function ConfirmBtn(){
+            return <button style={{
+                backgroundColor:"tomato",
+                color:"white",
+                padding: "10px 20px",
+                border: 0,
+                borderRadius: 10,
+            }}>Confirm</button>
+        }
+        Btn.propTypes= {
+            text: PropTypes.string.isRequired,
+            fontSize: PropTypes.number.isRequired,
+        }
+
+        function App() {
+            const [value, setValue] = React.useState("Save Changes");
+            const changeValue = () => setValue("Revert Changes")
+            return(
+            <div>
+                <Btn text={value} onClick={changeValue} fontSize= {18}/>
+                <Btn text={"String"} fontSize={12}/>
+            </div>
+        )};
+        
+        const root = document.getElementById("root");
+        ReactDOM.render(<App />, root);
 
 
     </script>

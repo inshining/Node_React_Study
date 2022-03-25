@@ -7,14 +7,20 @@ import tweetsRouter from './router/tweets.js';
 import authRouter from './router/auth.js';
 import { config } from './config.js';
 import { initSocket } from './connection/socket.js';
-import { connectDB, sequelize } from './db/database.js';
+import { sequelize } from './db/database.js';
 
 const app = express();
+
+const corsOption = {
+  origin: config.cors.allowedOrigin,
+  optionsSuccessStatus:200,
+};
 
 app.use(express.json());
 app.use(helmet());
 app.use(cors());
 app.use(morgan('tiny'));
+app.use(cors(corsOption));
 
 app.use('/tweets', tweetsRouter);
 app.use('/auth', authRouter);
@@ -28,17 +34,11 @@ app.use((error, req, res, next) => {
   res.sendStatus(500);
 });
 
-connectDB().then(db => {
-  console.log('init', db);
-  const server = app.listen(config.host.port);
+
+
+sequelize.sync().then((client) => {
+  console.log(`Server is started.... ${new Date()}`);
+  const server = app.listen(config.port);
   initSocket(server);
 })
-.catch(console.error());
-
-
-// sequelize.sync().then((client) => {
-//   // console.log(client);
-//   const server = app.listen(config.host.port);
-//   initSocket(server);
-// })
 
