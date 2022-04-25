@@ -7,6 +7,16 @@
 var app = require('../app');
 var debug = require('debug')('map-clone-2:server');
 var http = require('http');
+const userConfig = require('../config/userConfig.json')
+
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const uri = `mongodb+srv://inshining:${userConfig.password}@firstmap.70zrj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+client.connect(err => {
+  const collection = client.db("test").collection("devices");
+  // perform actions on the collection object
+  client.close();
+});
 
 /**
  * Get port from environment and store in Express.
