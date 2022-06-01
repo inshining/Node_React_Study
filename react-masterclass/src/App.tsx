@@ -1,7 +1,5 @@
-import React from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
 import { createGlobalStyle } from "styled-components";
-import { hourSelector, minuteState } from "./atoms";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 
 const GlobalStyle = createGlobalStyle`
 @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;1,300&family=Noto+Sans+KR:wght@300;500&display=swap');
@@ -72,20 +70,31 @@ a {
 `
 
 function App() {
-  const [minutes, setMinutes] = useRecoilState(minuteState);
-  const [hours, setHours] = useRecoilState(hourSelector);
-  const onMinutesChange = (event:React.FormEvent<HTMLInputElement>)=>{
-    setMinutes(+event.currentTarget.value) 
-  };
-
-  const setHoursChange = (event:React.FormEvent<HTMLInputElement>)=>{
-    setHours(+event.currentTarget.value)
-  }
+  const onDragEnd = () => {}
   return (
-    <>  
-      <GlobalStyle />
-      <input type="number" onChange={onMinutesChange} placeholder="Minutes" value={minutes} />
-      <input type="number" onChange={setHoursChange} placeholder="Hours" value={hours} />
+    <>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <div>
+          <Droppable droppableId="one">
+            {(magic) => (
+            <ul ref={magic.innerRef} {...magic.droppableProps}>
+              <Draggable draggableId="first" index={0}>
+                {(magic) => (
+                <li ref={magic.innerRef} {...magic.draggableProps} {...magic.dragHandleProps}>
+                  One
+                </li>
+                )}
+              </Draggable>
+              <Draggable draggableId="second" index={1}>
+                {(magic) => (
+                <li ref={magic.innerRef} {...magic.draggableProps} {...magic.dragHandleProps}>
+                  Two
+                </li>)}
+              </Draggable>
+            </ul>)}
+          </Droppable>
+        </div>  
+      </DragDropContext> 
     </>
   )
 
